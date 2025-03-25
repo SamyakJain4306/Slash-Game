@@ -116,10 +116,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DisarmEnd();
 
+	UPROPERTY(VisibleInstanceOnly)
+	AWeapon* EquippedWeapon;
 private:	
 	AItem* OverLappedItem;
 
-	AWeapon* EquippedWeapon;
+	
 
 	EEquipStates CharacterEquipState = EEquipStates::EES_Unequipped;
 

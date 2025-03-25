@@ -76,8 +76,9 @@ void AWeapon::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 				
 			}
 			IgnoreActors.AddUnique(HitResult.GetActor());
+			CreateFields(HitResult.Location);
 		}
-
+		
 
 }
 
