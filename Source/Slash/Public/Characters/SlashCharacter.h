@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseCharacter/BaseCharacter.h"
 #include "InputActionValue.h"
 #include "CharacterStates.h"
 #include "SlashCharacter.generated.h"
@@ -16,13 +16,11 @@ class UInputMappingContext;
 class UInputAction;
 class AItem;
 class UAnimMotage;
-class AWeapon;
-
 
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ACharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -30,8 +28,9 @@ public:
 	
 	ASlashCharacter();
 
-	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 
 
 protected:
@@ -56,11 +55,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* ThrowAction;
+
+
 	//Input Call backs
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EKeyPressed();
 	void Attack();
+	void Throw();
+
+
 	//Components
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArm;
@@ -75,19 +81,16 @@ protected:
 	UGroomComponent* Eyebrows;
 
 
-
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	UAnimMontage* AttackMontage;
-
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
 	UAnimMontage* DisarmMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Animation)
 	UAnimMontage* ArmMontage;
 
-	void PlayAttackMontage();
 	void PlayDisarmMontage();
 	void PlayArmMontage();
+
+
 
 	UFUNCTION(BlueprintCallable)
 	void ArmWeapon();
@@ -95,14 +98,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DisarmWeapon();
 
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
-
-	UFUNCTION(BlueprintCallable)
-	void WeaponCollisionEnable();
-
-	UFUNCTION(BlueprintCallable)
-	void WeaponCollisionDisable();
+	void AttackEnd() override;
 
 	UFUNCTION(BlueprintCallable)
 	void ArmStart();
@@ -116,12 +112,18 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DisarmEnd();
 
-	UPROPERTY(VisibleInstanceOnly)
-	AWeapon* EquippedWeapon;
+	UFUNCTION(BlueprintCallable)
+
+	void HitReactEnd();
+
+
+
+
+
+
 private:	
 	AItem* OverLappedItem;
 
-	
 
 	EEquipStates CharacterEquipState = EEquipStates::EES_Unequipped;
 

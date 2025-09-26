@@ -44,12 +44,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ItemMesh;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* EmbersEffect;
+
 	enum EItemStates : uint8
 	{
 		Hovering,
 		Equipped
 	};
 	EItemStates ItemState = EItemStates::Hovering;
+
 private:
 
 	UPROPERTY(VisibleAnywhere)

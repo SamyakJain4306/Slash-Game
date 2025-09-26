@@ -6,6 +6,7 @@
 #include "Slash/Debug.h"
 #include "Components/SphereComponent.h"
 #include "Characters/SlashCharacter.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AItem::AItem() 
@@ -18,6 +19,9 @@ AItem::AItem()
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(ItemMesh);
+
+	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
+	EmbersEffect->SetupAttachment(ItemMesh);
 
 }
 

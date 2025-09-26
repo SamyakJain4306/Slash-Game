@@ -30,6 +30,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USceneComponent* TraceEnd;
 
+	TArray<AActor*> IgnoreActors;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& Location);
+
+	void AttachWeapon(USceneComponent* InParent, FName SocketName, AActor* NewOwner, APawn* NewInstigator);
+
+	void DettachWeapon();
+
+
+	FORCEINLINE UBoxComponent* GetBoxComponent();
+
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -41,18 +54,13 @@ protected:
 
 	UFUNCTION()
 	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	
 
-public:
+private:
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void CreateFields(const FVector& Location);
+	void EmbersDisable();
 
-	void AttachWeapon(USceneComponent* InParent, FName SocketName);
-
-	TArray<AActor*> IgnoreActors;
-	
-	FORCEINLINE UBoxComponent* GetBoxComponent();
+	void EmbersEnable();
 	
 };

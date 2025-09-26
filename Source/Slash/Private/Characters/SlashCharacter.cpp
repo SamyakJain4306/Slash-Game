@@ -5,13 +5,13 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/InputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GroomComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "Animation/AnimInstance.h"
-#include "Components/BoxComponent.h"
 
 
 ASlashCharacter::ASlashCharacter()
@@ -23,7 +23,14 @@ ASlashCharacter::ASlashCharacter()
  	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+	GetMesh()->SetGenerateOverlapEvents(true);
+
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
@@ -45,6 +52,8 @@ ASlashCharacter::ASlashCharacter()
 void ASlashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Tags.Add(FName("SlashCharacter"));
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -84,13 +93,16 @@ void ASlashCharacter::EKeyPressed()
 	AWeapon* OverlappedWeapon = Cast<AWeapon>(OverLappedItem);
 	if (CharacterEquipState == EEquipStates::EES_Unequipped and OverlappedWeapon)
 	{
-		OverlappedWeapon->AttachWeapon(GetMesh(), FName("RightHandSocket"));
-		CharacterEquipState = EEquipStates::EES_EquippedHoldingOneHand;
+		
+		if (OverlappedWeapon)
+		{
+			OverlappedWeapon->AttachWeapon(GetMesh(), FName("RightHandSocket"), this, this);
+			CharacterEquipState = EEquipStates::EES_Equipped;
+		}
 		EquippedWeapon = OverlappedWeapon;
 		OverLappedItem = nullptr;
-		
 	}
-	else if (CharacterEquipState == EEquipStates::EES_EquippedHoldingOneHand and CharacterAttackState == EAttackStates::EAS_Unoccupied)
+	else if (CharacterEquipState == EEquipStates::EES_Equipped and CharacterAttackState == EAttackStates::EAS_Unoccupied and EquippedWeapon)
 	{
 		PlayDisarmMontage();
 	}
@@ -104,7 +116,7 @@ void ASlashCharacter::ArmWeapon()
 {
 	if (EquippedWeapon)
 	{
-		EquippedWeapon->AttachWeapon(GetMesh(), FName("RightHandSocket"));
+		EquippedWeapon->AttachWeapon(GetMesh(), FName("RightHandSocket"), this, this);
 	}
 }
 
@@ -112,7 +124,7 @@ void ASlashCharacter::DisarmWeapon()
 {
 	if (EquippedWeapon)
 	{
-		EquippedWeapon->AttachWeapon(GetMesh(), FName("SwordHolderSocket"));
+		EquippedWeapon->AttachWeapon(GetMesh(), FName("SwordHolderSocket"), this, this);
 	}
 }
 
@@ -134,15 +146,23 @@ void ASlashCharacter::PlayArmMontage()
 	if (AnimInstance and ArmMontage)
 	{
 		AnimInstance->Montage_Play(ArmMontage);
-		GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Blue, "PlayedMontage");
 	}
+}
+
+void ASlashCharacter::Throw()
+{
+	if (EquippedWeapon == nullptr) return;
+	EquippedWeapon->DettachWeapon();
+	CharacterEquipState = EEquipStates::EES_Unequipped;
+	EquippedWeapon = nullptr;
+
 }
 
 
 
 void ASlashCharacter::Attack()
 {
-	if (CharacterAttackState == EAttackStates::EAS_Unoccupied and CharacterEquipState == EEquipStates::EES_EquippedHoldingOneHand)
+	if (CharacterAttackState == EAttackStates::EAS_Unoccupied and CharacterEquipState != EEquipStates::EES_Unequipped and CharacterEquipState != EEquipStates::EES_Equipping)
 	{
 		PlayAttackMontage();
 		CharacterAttackState = EAttackStates::EAS_Attacking;
@@ -150,45 +170,25 @@ void ASlashCharacter::Attack()
 	
 }
 
-void ASlashCharacter::PlayAttackMontage()
-{
-	USkeletalMeshComponent* SKM = GetMesh();
-	UAnimInstance* AnimInstance = SKM->GetAnimInstance();
-	if (AnimInstance and AttackMontage)
-	{
-		AnimInstance->Montage_Play(AttackMontage);
-		FName SectionName;
-		int32 Selection = FMath::RandRange(1, 2);
-		switch (Selection)
-		{
-		case 1:
-			SectionName = FName("Attack1");
-			break;
-		case 2:
-			SectionName = FName("Attack2");
-			break;
-		default:
-			break;
-		}
-		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
-	}
-}
+
 
 void ASlashCharacter::AttackEnd()
 {
 	CharacterAttackState = EAttackStates::EAS_Unoccupied;
 }
 
-void ASlashCharacter::WeaponCollisionEnable()
+void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
 {
-	EquippedWeapon->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Super::GetHit_Implementation(ImpactPoint, Hitter);
+	if (IsAlive())
+	{
+		CharacterAttackState = EAttackStates::EAS_HitReacting;
+		if (EquippedWeapon) WeaponCollisionDisable();
+		CombatTarget = Hitter;
+	}
+
 }
 
-void ASlashCharacter::WeaponCollisionDisable()
-{
-	EquippedWeapon->GetBoxComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	EquippedWeapon->IgnoreActors.Empty();
-}
 
 void ASlashCharacter::ArmStart()
 {
@@ -197,7 +197,7 @@ void ASlashCharacter::ArmStart()
 
 void ASlashCharacter::ArmEnd()
 {
-	CharacterEquipState = EEquipStates::EES_EquippedHoldingOneHand;
+	CharacterEquipState = EEquipStates::EES_Equipped;
 }
 
 void ASlashCharacter::DisarmStart()
@@ -208,6 +208,11 @@ void ASlashCharacter::DisarmStart()
 void ASlashCharacter::DisarmEnd()
 {
 	CharacterEquipState = EEquipStates::EES_Unequipped;
+}
+
+void ASlashCharacter::HitReactEnd()
+{
+	CharacterAttackState = EAttackStates::EAS_Unoccupied;
 }
 
 
@@ -224,16 +229,15 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputCompontent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputCompontent->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
 		EnhancedInputCompontent->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashCharacter::Attack);
+		EnhancedInputCompontent->BindAction(ThrowAction, ETriggerEvent::Started, this, &ASlashCharacter::Throw);
 
 	}
 
 }
 
-
-
-
-void ASlashCharacter::Tick(float DeltaTime)
+float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	Super::Tick(DeltaTime);
-
+	HandleDamage(DamageAmount);
+	return DamageAmount;
 }
+
