@@ -15,6 +15,8 @@ class SLASH_API USlashOverlay : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	void SetHealthPercent(float Percent);
+private:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* ProgressHealth;
 
