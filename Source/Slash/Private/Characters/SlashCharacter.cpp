@@ -11,7 +11,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GroomComponent.h"
 #include "Items/Weapons/Weapon.h"
+#include "Items/Soul.h"
 #include "Animation/AnimInstance.h"
+#include "Components/Attributes.h"
+#include "HUD/SlashHUD.h"
+#include "HUD/SlashOverlay.h"
 
 
 ASlashCharacter::ASlashCharacter()
@@ -62,11 +66,27 @@ void ASlashCharacter::BeginPlay()
 			Subsystem->AddMappingContext(SlashInputContext, 0);
 		}
 	}
+	
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		ASlashHUD* SlashHUD = Cast<ASlashHUD>(PlayerController->GetHUD());
+		if (SlashHUD)
+		{
+			SlashOverlay = SlashHUD->GetSlashOverlay();
+		}
+	}
+	if (SlashOverlay)
+	{
+		SlashOverlay->SetHealthPercent(100.f);
+		SlashOverlay->SetStaminaPercent(100.f);
+		SlashOverlay->SetGoldAmount(0);
+		SlashOverlay->SetSoulsAmount(0);
+	}
 
 }
 void ASlashCharacter::Move(const FInputActionValue& Value)
 {
-	if (CharacterAttackState == EAttackStates::EAS_Attacking or CharacterEquipState == EEquipStates::EES_Equipping)
+	if (CharacterActionState == EActionStates::EAS_Attacking or CharacterEquipState == EEquipStates::EES_Equipping)
 	{
 		return;
 	}
@@ -102,11 +122,11 @@ void ASlashCharacter::EKeyPressed()
 		EquippedWeapon = OverlappedWeapon;
 		OverLappedItem = nullptr;
 	}
-	else if (CharacterEquipState == EEquipStates::EES_Equipped and CharacterAttackState == EAttackStates::EAS_Unoccupied and EquippedWeapon)
+	else if (CharacterEquipState == EEquipStates::EES_Equipped and CharacterActionState == EActionStates::EAS_Unoccupied and EquippedWeapon)
 	{
 		PlayDisarmMontage();
 	}
-	else if (CharacterEquipState == EEquipStates::EES_Unequipped and CharacterAttackState == EAttackStates::EAS_Unoccupied and EquippedWeapon)
+	else if (CharacterEquipState == EEquipStates::EES_Unequipped and CharacterActionState == EActionStates::EAS_Unoccupied and EquippedWeapon)
 	{
 		PlayArmMontage();
 	}
@@ -158,14 +178,28 @@ void ASlashCharacter::Throw()
 
 }
 
+void ASlashCharacter::Die()
+{
+	Super::Die();
+	CharacterActionState = EActionStates::EAS_Dead;
+	GetCharacterMovement()->DisableMovement();
+}
+
+void ASlashCharacter::Jump()
+{
+	if (CharacterActionState  == EActionStates::EAS_Unoccupied)
+	{
+		Super::Jump();
+	}
+}
 
 
 void ASlashCharacter::Attack()
 {
-	if (CharacterAttackState == EAttackStates::EAS_Unoccupied and CharacterEquipState != EEquipStates::EES_Unequipped and CharacterEquipState != EEquipStates::EES_Equipping)
+	if (CharacterActionState == EActionStates::EAS_Unoccupied and CharacterEquipState != EEquipStates::EES_Unequipped and CharacterEquipState != EEquipStates::EES_Equipping)
 	{
 		PlayAttackMontage();
-		CharacterAttackState = EAttackStates::EAS_Attacking;
+		CharacterActionState = EActionStates::EAS_Attacking;
 	}
 	
 }
@@ -174,7 +208,7 @@ void ASlashCharacter::Attack()
 
 void ASlashCharacter::AttackEnd()
 {
-	CharacterAttackState = EAttackStates::EAS_Unoccupied;
+	CharacterActionState = EActionStates::EAS_Unoccupied;
 }
 
 void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter)
@@ -182,7 +216,7 @@ void ASlashCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* 
 	Super::GetHit_Implementation(ImpactPoint, Hitter);
 	if (IsAlive())
 	{
-		CharacterAttackState = EAttackStates::EAS_HitReacting;
+		CharacterActionState = EActionStates::EAS_HitReacting;
 		if (EquippedWeapon) WeaponCollisionDisable();
 		CombatTarget = Hitter;
 	}
@@ -212,9 +246,18 @@ void ASlashCharacter::DisarmEnd()
 
 void ASlashCharacter::HitReactEnd()
 {
-	CharacterAttackState = EAttackStates::EAS_Unoccupied;
+	CharacterActionState = EActionStates::EAS_Unoccupied;
 }
 
+void ASlashCharacter::SetOverlappedItem(AItem* OverlappingItem)
+{
+	OverLappedItem = OverlappingItem;
+}
+
+void ASlashCharacter::AddSoul(ASoul* Soul)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ASlashCharacter::AddSoul"));
+}
 
 
 void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -238,6 +281,10 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 float ASlashCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	if (SlashOverlay and Attributes)
+	{
+		SlashOverlay->SetHealthPercent(Attributes->GetHealthPercent());
+	}
 	return DamageAmount;
 }
 

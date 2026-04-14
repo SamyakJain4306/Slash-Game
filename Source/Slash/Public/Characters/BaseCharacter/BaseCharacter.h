@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Characters/CharacterStates.h"
 #include "BaseCharacter.generated.h"
 
 
@@ -30,6 +31,9 @@ protected:
 
 
 	//Variables
+	UPROPERTY(BlueprintReadOnly)
+	TEnumAsByte<EDeathPose> DeathPose;
+	
 	UPROPERTY(VisibleInstanceOnly)
 	class AWeapon* EquippedWeapon;
 
@@ -77,7 +81,7 @@ protected:
 	//Death Related Functions
 	virtual int32 PlayDeathMontage();
 	virtual void Die();
-	virtual bool IsAlive();
+	
 
 
 
@@ -115,5 +119,8 @@ private:
 	//ParticleSystems
 	UPROPERTY(EditAnywhere, Category = VisualEffects)
 	UParticleSystem* HitParticles;
+	
+public:
+	virtual bool IsAlive();
 
 };

@@ -2,9 +2,12 @@
 
 
 #include "Characters/BaseCharacter/BaseCharacter.h"
+
+
 #include "Items/Weapons/Weapon.h"
 #include "Components/Attributes.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ABaseCharacter::ABaseCharacter()
@@ -59,7 +62,17 @@ int32 ABaseCharacter::PlayRandomMontage(UAnimMontage* Montage, TArray<FName> Sec
 
 int32 ABaseCharacter::PlayDeathMontage()
 {
-	return PlayRandomMontage(DeathMontage, DeathMontageSections);
+	
+	int32 Selection = PlayRandomMontage(DeathMontage, DeathMontageSections);
+	TEnumAsByte<EDeathPose> Pose(Selection);
+	if (Pose < EDeathPose::EDP_Max)
+	{
+		DeathPose = Pose;
+		DeathPose = Pose;
+	}
+
+	return Selection;
+	
 }
 bool ABaseCharacter::IsAlive()
 {
@@ -103,11 +116,16 @@ void ABaseCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* H
 }
 void ABaseCharacter::Die()
 {
-
+	Tags.Add(FName("Dead"));
+	PlayDeathMontage();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 void ABaseCharacter::Attack()
 {
-
+	if (CombatTarget and CombatTarget->ActorHasTag(FName("Dead")))
+	{
+		CombatTarget = nullptr;
+	}
 }
 
 void ABaseCharacter::DirectionalHitMontage(const FVector& ImpactPoint)

@@ -8,11 +8,12 @@ enum class EEquipStates: uint8
 };
 
 UENUM(BlueprintType)
-enum class EAttackStates: uint8
+enum class EActionStates: uint8
 {
 	EAS_Unoccupied UMETA(DisplayName = "Unoccupied"),
 	EAS_HitReacting UMETA(DisplayName = "Hit Reacting"),
-	EAS_Attacking UMETA(DisplayName = "Attacking")
+	EAS_Attacking UMETA(DisplayName = "Attacking"),
+	EAS_Dead UMETA(DisplayName = "Dead"),
 };
 
 UENUM(BlueprintType)

@@ -31,6 +31,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	EEquipStates CharacterEquipStates;
 	
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	TEnumAsByte<EDeathPose> DeathPose;
+	
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	EActionStates CharacterActionState = EActionStates::EAS_Unoccupied;
+	
 
 	
 };

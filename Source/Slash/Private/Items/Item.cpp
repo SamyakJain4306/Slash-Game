@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Characters/SlashCharacter.h"
 #include "NiagaraComponent.h"
+#include "Interfaces/PickupInterface.h"
 
 // Sets default values
 AItem::AItem() 
@@ -20,8 +21,8 @@ AItem::AItem()
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(ItemMesh);
 
-	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
-	EmbersEffect->SetupAttachment(ItemMesh);
+	ItemEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Effect"));
+	ItemEffect->SetupAttachment(ItemMesh);
 
 }
 
@@ -46,12 +47,12 @@ float AItem::TransformedCos()
 
 void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor)) { SlashCharacter->SetOverlappedItem(this); }
+	if (IPickupInterface* PickupInteface = Cast<IPickupInterface>(OtherActor)) { PickupInteface->SetOverlappedItem(this); }
 }
 
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (ASlashCharacter* SlashCharacter = Cast<ASlashCharacter>(OtherActor)) { SlashCharacter->SetOverlappedItem(nullptr); }
+	if (IPickupInterface* PickupInteface = Cast<IPickupInterface>(OtherActor)) { PickupInteface->SetOverlappedItem(nullptr); }
 
 }
 

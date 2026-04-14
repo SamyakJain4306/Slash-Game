@@ -14,4 +14,18 @@ class SLASH_API ASlashHUD : public AHUD
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void BeginPlay() override;
+	
+private:
+	UPROPERTY(EditAnywhere, Category = "HUD")
+	TSubclassOf<class USlashOverlay> SlashOverlayClass;
+	
+	
+	UPROPERTY()
+	USlashOverlay* SlashOverlay;
+	
+public:
+	FORCEINLINE USlashOverlay* GetSlashOverlay() const {return SlashOverlay;}
+	
 };

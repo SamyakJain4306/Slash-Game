@@ -113,7 +113,7 @@ void AWeapon::AttachWeapon(USceneComponent* InParent, FName SocketName, AActor* 
 
 void AWeapon::EmbersDisable()
 {
-	EmbersEffect->Deactivate();
+	ItemEffect->Deactivate();
 }
 
 void AWeapon::DettachWeapon()
@@ -128,7 +128,7 @@ void AWeapon::DettachWeapon()
 
 void AWeapon::EmbersEnable()
 {
-	EmbersEffect->Activate();
+	ItemEffect->Activate();
 }
 
 UBoxComponent* AWeapon::GetBoxComponent()

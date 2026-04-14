@@ -45,8 +45,10 @@ protected:
 	UStaticMeshComponent* ItemMesh;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraComponent* EmbersEffect;
+	class UNiagaraComponent* ItemEffect;
 
+	
+	
 	enum EItemStates : uint8
 	{
 		Hovering,
@@ -55,6 +57,7 @@ protected:
 	EItemStates ItemState = EItemStates::Hovering;
 
 private:
+	
 
 	UPROPERTY(VisibleAnywhere)
 	float RunningTime = 0;

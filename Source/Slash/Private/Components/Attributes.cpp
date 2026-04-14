@@ -27,7 +27,7 @@ void UAttributes::RecieveDamage(float Damage)
 
 float UAttributes::GetHealthPercent()
 {
-	return Health / MaxHealth;
+	return (Health / MaxHealth) * 100.f;
 }
 
 bool UAttributes::IsAlive()

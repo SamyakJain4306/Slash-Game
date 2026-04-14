@@ -55,30 +55,22 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Die()
 {
+	Super::Die();
 	EnemyState = EEnemyStates::EES_Dead;
-	PlayDeathMontage();
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 	SetLifeSpan(5.f);
 	EquippedWeapon->SetLifeSpan(5.f);
 	ClearAttackTimer();
 	
 
 }
-int32 AEnemy::PlayDeathMontage()
-{
-	int32 Selection = Super::PlayDeathMontage();
-	TEnumAsByte<EDeathPose> Pose(Selection);
-	if (Pose < EDeathPose::EDP_Max)
-	{
-		DeathPose = Pose;
-	}
 
-	return Selection;
-
-}
 
 void AEnemy::Attack()
 {
+	Super::Attack();
+	if (CombatTarget == nullptr) return;
+	
 	EnemyState = EEnemyStates::EES_Engaged;
 	PlayAttackMontage();
 }

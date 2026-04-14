@@ -6,21 +6,25 @@
 #include "BaseCharacter/BaseCharacter.h"
 #include "InputActionValue.h"
 #include "CharacterStates.h"
+#include "Components/Attributes.h"
+#include "Interfaces/PickupInterface.h"
 #include "SlashCharacter.generated.h"
 
 
+class USlashOverlay;
 class USpringArmComponent;
 class UCameraComponent;
 class UGroomComponent;
 class UInputMappingContext;
 class UInputAction;
 class AItem;
+class ASoul;
 class UAnimMotage;
 
 
 
 UCLASS()
-class SLASH_API ASlashCharacter : public ABaseCharacter
+class SLASH_API ASlashCharacter : public ABaseCharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
@@ -65,6 +69,9 @@ protected:
 	void EKeyPressed();
 	void Attack();
 	void Throw();
+	
+	virtual void Die() override;
+	virtual void Jump() override;
 
 
 	//Components
@@ -116,21 +123,26 @@ protected:
 
 	void HitReactEnd();
 
-
-
-
-
-
-private:	
+private:
+	
+	
+	UPROPERTY()
 	AItem* OverLappedItem;
+	
+	UPROPERTY()
+	USlashOverlay* SlashOverlay;
 
 
 	EEquipStates CharacterEquipState = EEquipStates::EES_Unequipped;
 
-	EAttackStates CharacterAttackState = EAttackStates::EAS_Unoccupied;
+	EActionStates CharacterActionState = EActionStates::EAS_Unoccupied;
 
 
 public:
-	FORCEINLINE void SetOverlappedItem(AItem* Item) { OverLappedItem = Item; }
-	FORCEINLINE EEquipStates GetEquipState() { return CharacterEquipState; }
+	virtual void SetOverlappedItem(AItem* OverlappingItem) override;
+	virtual void AddSoul(ASoul* Soul) override;
+	FORCEINLINE EEquipStates GetEquipState() const { return CharacterEquipState; }
+	FORCEINLINE EActionStates GetCharacterActionState() const { return CharacterActionState; }
+	FORCEINLINE EDeathPose GetDeathPose() const { return DeathPose; }
+	
 };

@@ -17,11 +17,6 @@ class SLASH_API ATreasure : public AItem
 protected:
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-	
-
-
-	UPROPERTY(EditAnywhere, Category = "Treasure Poperties")
-	int32 Gold;
 
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* TreasureSound;
