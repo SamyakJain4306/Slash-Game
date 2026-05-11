@@ -141,6 +141,7 @@ private:
 public:
 	virtual void SetOverlappedItem(AItem* OverlappingItem) override;
 	virtual void AddSoul(ASoul* Soul) override;
+	virtual void AddGold(ATreasure* Treasure) override;
 	FORCEINLINE EEquipStates GetEquipState() const { return CharacterEquipState; }
 	FORCEINLINE EActionStates GetCharacterActionState() const { return CharacterActionState; }
 	FORCEINLINE EDeathPose GetDeathPose() const { return DeathPose; }

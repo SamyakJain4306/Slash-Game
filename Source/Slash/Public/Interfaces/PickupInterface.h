@@ -8,6 +8,7 @@
 
 class ASoul;
 class AItem;
+class ATreasure;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPickupInterface : public UInterface
@@ -26,4 +27,5 @@ class SLASH_API IPickupInterface
 public:
 	virtual void SetOverlappedItem(AItem* OverlappingItem);
 	virtual void AddSoul(ASoul* Soul);
+	virtual void AddGold(ATreasure* Treasure);
 };

@@ -23,16 +23,28 @@ protected:
 
 private:
 	//Current health
-	UPROPERTY(EditAnywhere, Category = "Actor Attributes")
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	float Health;
 
-	UPROPERTY(EditAnywhere, Category = "Actor Attributes")
+	UPROPERTY(EditAnywhere, Category = "Attributes")
 	float MaxHealth;
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	int32 Gold;
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	int32 Souls;
+
 
 public:
 	void RecieveDamage(float Damage);
 	float GetHealthPercent();
 	bool IsAlive();
+	void AddSoul(int32 Amount);
+	void AddGold(int32 Amount);
 
+	
+	FORCEINLINE int32 GetSouls() const { return Souls; }
+	FORCEINLINE int32 GetGold() const { return Gold; }
 		
 };

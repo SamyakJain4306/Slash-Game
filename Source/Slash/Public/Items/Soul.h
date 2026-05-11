@@ -14,10 +14,16 @@ class SLASH_API ASoul : public AItem
 	GENERATED_BODY()
 	
 private:
+	
+	UPROPERTY(EditAnywhere)
+	int32 SoulsAmount;
+	
 	UPROPERTY(EditAnywhere)
 	UNiagaraSystem* PickupEffect;
 	UPROPERTY(EditAnywhere)
 	USoundBase* PickupSound;
+	
+	
 	
 	void SpawnPickupEffect();
 	void PlayPickupSound();
@@ -28,5 +34,5 @@ protected:
 
 	
 public:
-	
+	FORCEINLINE int32 GetSoulsAmount() { return SoulsAmount; };
 };

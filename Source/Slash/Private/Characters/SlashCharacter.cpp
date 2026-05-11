@@ -16,6 +16,7 @@
 #include "Components/Attributes.h"
 #include "HUD/SlashHUD.h"
 #include "HUD/SlashOverlay.h"
+#include "Items/Treasure.h"
 
 
 ASlashCharacter::ASlashCharacter()
@@ -256,7 +257,27 @@ void ASlashCharacter::SetOverlappedItem(AItem* OverlappingItem)
 
 void ASlashCharacter::AddSoul(ASoul* Soul)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ASlashCharacter::AddSoul"));
+	if (Attributes)
+	{
+		Attributes->AddSoul(Soul->GetSoulsAmount());
+		if (SlashOverlay)
+		{
+			SlashOverlay->SetSoulsAmount(Attributes->GetSouls());
+		}
+	}
+	
+}
+
+void ASlashCharacter::AddGold(ATreasure* Treasure)
+{
+	if (Attributes)
+	{
+		Attributes->AddGold(Treasure->GetGoldAmount());
+		if (SlashOverlay)
+		{
+			SlashOverlay->SetGoldAmount(Attributes->GetGold());
+		}
+	}
 }
 
 
@@ -273,7 +294,6 @@ void ASlashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputCompontent->BindAction(EquipAction, ETriggerEvent::Started, this, &ASlashCharacter::EKeyPressed);
 		EnhancedInputCompontent->BindAction(AttackAction, ETriggerEvent::Started, this, &ASlashCharacter::Attack);
 		EnhancedInputCompontent->BindAction(ThrowAction, ETriggerEvent::Started, this, &ASlashCharacter::Throw);
-
 	}
 
 }
